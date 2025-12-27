@@ -1,4 +1,3 @@
-cat << 'EOF' > README.md
 # 🦅 Nighthawk Suite v62.0 (Autonomous Evolution)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -33,7 +32,7 @@ Nighthawk v62.0 is a state-of-the-art wireless auditing suite designed for Red T
 
 ```bash
 # 1. Clone the repository
-git clone [https://github.com/dash2hack-svg/Nighthawk_Suite.git](https://github.com/dash2hack-svg/Nighthawk_Suite.git)
+git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
 cd Nighthawk_Suite
 
 # 2. Install Dependencies
@@ -46,7 +45,6 @@ pip install -r requirements.txt
 # 4. Launch (Root Required)
 sudo python3 nighthawk.py
 
-
 🪟 Windows (Auditor Mode)
 
 Supports Recon, Loot Management, and Offline Cracking.
@@ -56,10 +54,26 @@ Supports Recon, Loot Management, and Offline Cracking.
     Install Python 3.x.
 
     Run via PowerShell (Admin):
-    PowerShell
 
-    pip install -r requirements.txt
-    python nighthawk.py
+PowerShell
+
+pip install -r requirements.txt
+python nighthawk.py
+
+🍎 macOS (Recon Mode)
+
+Supports Passive Recon, Bluetooth Scanning, and Loot Management.
+
+    Install Homebrew dependencies:
+    Bash
+
+brew install nmap
+
+Install Python libraries and run:
+Bash
+
+    pip3 install -r requirements.txt
+    sudo python3 nighthawk.py
 
 📂 Module Breakdown
 Module	Function
@@ -74,15 +88,4 @@ Bluetooth Arsenal	BLE scanning (Cross-Platform) and L2PING flooding (Linux).
 This tool is provided for educational and authorized auditing purposes only. The authors are not responsible for any misuse or damage caused by this program. Use only on networks you own or have explicit permission to audit.
 📜 License
 
-Distributed under the MIT License. See LICENSE for more information.
-
-
-### How to apply this manually (if you prefer):
-1.  Open `README.md` in your text editor.
-2.  Paste the code above.
-3.  Save and run:
-    ```bash
-    git add README.md
-    git commit -m "Update docs"
-    git push
-    ```
+Distributed under the MIT License. See LICENSE for more information. EOF git add README.md git commit -m "Fix README formatting" git push
