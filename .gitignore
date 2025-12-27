@@ -1,0 +1,18 @@
+# Ignore Python Compiled Files
+__pycache__/
+*.pyc
+
+# Ignore Sensitive Data (Loot & Logs)
+loot/
+logs/
+*.cap
+*.csv
+*.netxml
+*.kismet
+*.pot
+credentials.txt
+hostapd-wpe.log
+
+# Ignore System Configs
+.DS_Store
+Thumbs.db
