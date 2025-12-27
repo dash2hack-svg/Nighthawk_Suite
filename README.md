@@ -45,3 +45,42 @@ pip install -r requirements.txt
 
 # 4. Launch (Root Required)
 sudo python3 nighthawk.py
+🪟 Windows (Auditor Mode)
+
+Supports Recon, Loot Management, and Offline Cracking.
+
+    Install Npcap (Ensure "Install with WinPcap API-compatible Mode" is checked).
+
+    Install Python 3.x.
+
+    Run via PowerShell (Admin):
+    PowerShell
+
+    pip install -r requirements.txt
+    python nighthawk.py
+
+📂 Module Breakdown
+Module	Function
+Encryption Attack	Automated WPA2/WPA3 handshake capture and aircrack-ng integration.
+Enterprise WPE	RADIUS server impersonation for corporate credential harvesting.
+Evil Twin	Rogue Access Point with customizable Captive Portals.
+Loot Repository	HTML "Trophy Room" generation and secure credential storage.
+Recon	Scapy-based autonomous network mapping and OS detection.
+Bluetooth Arsenal	BLE scanning (Cross-Platform) and L2PING flooding (Linux).
+⚠️ Disclaimer
+
+This tool is provided for educational and authorized auditing purposes only. The authors are not responsible for any misuse or damage caused by this program. Use only on networks you own or have explicit permission to audit.
+📜 License
+
+Distributed under the MIT License. See LICENSE for more information.
+
+
+### How to apply this manually (if you prefer):
+1.  Open `README.md` in your text editor.
+2.  Paste the code above.
+3.  Save and run:
+    ```bash
+    git add README.md
+    git commit -m "Update docs"
+    git push
+    ```
