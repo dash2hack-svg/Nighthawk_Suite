@@ -45,6 +45,8 @@ pip install -r requirements.txt
 
 # 4. Launch (Root Required)
 sudo python3 nighthawk.py
+
+
 🪟 Windows (Auditor Mode)
 
 Supports Recon, Loot Management, and Offline Cracking.
