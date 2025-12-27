@@ -14,7 +14,7 @@ Nighthawk v62.0 is a state-of-the-art wireless auditing suite designed for Red T
 * **Full Kill-Chain Automation:** Automatically detects targets, captures handshakes, and launches `hashcat` cracking.
 * **RTL8187 Health Monitor:** Proprietary driver logic prevents buffer stalls during high-power packet injection.
 * **Smart Mutation:** Dynamically prioritizes attack vectors based on signal-to-noise ratio (SNR).
-
+* 
 ### 🎭 Enterprise Espionage (WPE)
 * **RADIUS Impersonation:** Deploys a rogue `hostapd-wpe` server to harvest corporate credentials (NETNTLM).
 * **Evil Twin Engine:** Spawns a captive portal using `dnsmasq` to capture guest Wi-Fi passwords via social engineering.
@@ -24,9 +24,52 @@ Nighthawk v62.0 is a state-of-the-art wireless auditing suite designed for Red T
 * **Hardware Abstraction:** Works with any interface (Alfa, Panda, Internal) by querying driver capabilities dynamically.
 
 ---
+📂 Module Breakdown
+Module	Function
+Encryption Attack	Automated WPA2/WPA3 handshake capture and aircrack-ng integration.
+Enterprise WPE	RADIUS server impersonation for corporate credential harvesting.
+Evil Twin	Rogue Access Point with customizable Captive Portals.
+Loot Repository	HTML "Trophy Room" generation and secure credential storage.
+Recon	Scapy-based autonomous network mapping and OS detection.
+Bluetooth Arsenal	BLE scanning (Cross-Platform) and L2PING flooding (Linux).
+⚠️ Disclaimer
+
+This tool is provided for educational and authorized auditing purposes only. The authors are not responsible for any misuse or damage caused by this program. Use only on networks you own or have explicit permission to audit.
+📜 License
+
+Distributed under the MIT License. See LICENSE for more information. EOF git add README.md git commit -m "Fix README formatting" git push
+
 
 ## 📦 Installation & Usage
+🪟 Windows (Auditor Mode)
 
+Supports Recon, Loot Management, and Offline Cracking.
+
+    Install Npcap (Ensure "Install with WinPcap API-compatible Mode" is checked).
+
+    Install Python 3.x.
+
+    Run via PowerShell (Admin):
+
+🍎 macOS (Recon Mode)
+
+Supports Passive Recon, Bluetooth Scanning, and Loot Management.
+
+    Install Homebrew dependencies:
+    Bash
+
+brew install nmap
+
+Install Python libraries and run:
+Bash
+
+pip3 install -r requirements.txt
+sudo python3 nighthawk.py
+
+PowerShell
+
+pip install -r requirements.txt
+python nighthawk.py
 ### 🐧 Linux (Kali / Parrot / Ubuntu)
 *Recommended for full injection and "God Mode" capabilities.*
 
@@ -45,47 +88,3 @@ pip install -r requirements.txt
 # 4. Launch (Root Required)
 sudo python3 nighthawk.py
 
-🪟 Windows (Auditor Mode)
-
-Supports Recon, Loot Management, and Offline Cracking.
-
-    Install Npcap (Ensure "Install with WinPcap API-compatible Mode" is checked).
-
-    Install Python 3.x.
-
-    Run via PowerShell (Admin):
-
-PowerShell
-
-pip install -r requirements.txt
-python nighthawk.py
-
-🍎 macOS (Recon Mode)
-
-Supports Passive Recon, Bluetooth Scanning, and Loot Management.
-
-    Install Homebrew dependencies:
-    Bash
-
-brew install nmap
-
-Install Python libraries and run:
-Bash
-
-    pip3 install -r requirements.txt
-    sudo python3 nighthawk.py
-
-📂 Module Breakdown
-Module	Function
-Encryption Attack	Automated WPA2/WPA3 handshake capture and aircrack-ng integration.
-Enterprise WPE	RADIUS server impersonation for corporate credential harvesting.
-Evil Twin	Rogue Access Point with customizable Captive Portals.
-Loot Repository	HTML "Trophy Room" generation and secure credential storage.
-Recon	Scapy-based autonomous network mapping and OS detection.
-Bluetooth Arsenal	BLE scanning (Cross-Platform) and L2PING flooding (Linux).
-⚠️ Disclaimer
-
-This tool is provided for educational and authorized auditing purposes only. The authors are not responsible for any misuse or damage caused by this program. Use only on networks you own or have explicit permission to audit.
-📜 License
-
-Distributed under the MIT License. See LICENSE for more information. EOF git add README.md git commit -m "Fix README formatting" git push
