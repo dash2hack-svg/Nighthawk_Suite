@@ -106,3 +106,6 @@ class Spinner:
         self.thread.join()
         sys.stdout.write(f"\r{G}[✔]{NC} {self.message} Complete.      \n")
         sys.stdout.flush()
+
+    def mini_banner():
+    print('--- Nighthawk ---')
