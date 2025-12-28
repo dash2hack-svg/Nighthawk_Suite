@@ -1,92 +1,124 @@
-# 🦅 Nighthawk Suite v62.0 (Autonomous Evolution)
+<p align="center"> <strong>A cross‑platform security suite for modern operators</strong> </p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-blue)](https://github.com/dash2hack-svg/Nighthawk_Suite)
-[![Python](https://img.shields.io/badge/Python-3.x-green)](https://www.python.org/)
+<p align="center"> <img src="assets/logo.png" width="180" alt="Nighthawk Suite Logo"/> </p>
 
-**The World's First Cross-Platform Autonomous Auditing Framework.**
+<p align="center"> <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge"/> <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge"/> <img src="https://img.shields.io/badge/Platforms-Linux%20%7C%20macOS%20%7C%20WSL-orange?style=for-the-badge"/> <img src="https://img.shields.io/github/stars/dash2hack-svg/Nighthawk_Suite?style=for-the-badge"/> <img src="https://img.shields.io/github/last-commit/dash2hack-svg/Nighthawk_Suite?style=for-the-badge"/> <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge"/> </p>
 
-Nighthawk v62.0 is a state-of-the-art wireless auditing suite designed for Red Team engagements. Unlike traditional script-based tools, Nighthawk features a **"Heuristic-to-Deterministic"** decision engine that adapts its attack vectors based on real-time telemetry and host OS capabilities.
+🎯 Overview
 
-## 🚀 Key Capabilities
+Nighthawk Suite is a cinematic, operator‑grade network reconnaissance toolkit designed for modern security professionals.Built with a focus on clarity, speed, and visual immersion, Nighthawk Suite provides a streamlined interface for network scanning, packet sniffing, and device discovery across supported platforms.
 
-### 🛡️ Autonomous Warfare (Linux "God Mode")
-* **Full Kill-Chain Automation:** Automatically detects targets, captures handshakes, and launches `hashcat` cracking.
-* **RTL8187 Health Monitor:** Proprietary driver logic prevents buffer stalls during high-power packet injection.
-* **Smart Mutation:** Dynamically prioritizes attack vectors based on signal-to-noise ratio (SNR).
-* 
-### 🎭 Enterprise Espionage (WPE)
-* **RADIUS Impersonation:** Deploys a rogue `hostapd-wpe` server to harvest corporate credentials (NETNTLM).
-* **Evil Twin Engine:** Spawns a captive portal using `dnsmasq` to capture guest Wi-Fi passwords via social engineering.
+⚡ Features
 
-### 🕸️ Cross-Platform Intelligence
-* **OS-Agnostic Core:** Automatically detects Windows/macOS and switches to "Passive Recon" or "Simulation Mode" to prevent crashes.
-* **Hardware Abstraction:** Works with any interface (Alfa, Panda, Internal) by querying driver capabilities dynamically.
+🔍 Network Scanning
 
----
+Identify active hosts, open ports, and network topology with precision.
 
-### 🐧 Linux (Kali / Parrot / Ubuntu)
-*Recommended for full injection and "God Mode" capabilities.*
+📡 Packet Sniffing
 
-```bash
-# 1. Clone the repository
+Capture and analyze packets in real time (Linux/macOS only).
+
+🛰 Device Discovery
+
+Enumerate devices, interfaces, and network metadata with clarity.
+
+🎨 Cinematic UI
+
+Rich‑powered terminal interface with animations, themes, and operator‑grade visuals.
+
+🧩 Modular Architecture
+
+Easily extend or customize modules for your workflow.
+
+🛠 Installation
+
+Linux (Recommended)
+
 git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
 cd Nighthawk_Suite
-
-# 2. Install Dependencies
-sudo apt update
-sudo apt install aircrack-ng hostapd dnsmasq hcxtools macchanger
-
-# 3. Install Python Libraries
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 
-# 4. Launch (Root Required)
-sudo python3 nighthawk.py
+macOS
 
-## 📦 Installation & Usage
-🪟 Windows (Auditor Mode)
-
-Supports Recon, Loot Management, and Offline Cracking.
-
-    Install Npcap (Ensure "Install with WinPcap API-compatible Mode" is checked).
-
-    Install Python 3.x.
-
-    Run via PowerShell (Admin):
-
-🍎 macOS (Recon Mode)
-
-Supports Passive Recon, Bluetooth Scanning, and Loot Management.
-
-    Install Homebrew dependencies:
-    Bash
-
-brew install nmap
-
-Install Python libraries and run:
-Bash
-
-pip3 install -r requirements.txt
-sudo python3 nighthawk.py
-
-PowerShell
-
+git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
+cd Nighthawk_Suite
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-python nighthawk.py
+sudo python main.py
 
-📂 Module Breakdown
-Module	Function
-Encryption Attack	Automated WPA2/WPA3 handshake capture and aircrack-ng integration.
-Enterprise WPE	RADIUS server impersonation for corporate credential harvesting.
-Evil Twin	Rogue Access Point with customizable Captive Portals.
-Loot Repository	HTML "Trophy Room" generation and secure credential storage.
-Recon	Scapy-based autonomous network mapping and OS detection.
-Bluetooth Arsenal	BLE scanning (Cross-Platform) and L2PING flooding (Linux).
+Windows (WSL Required)
 
-⚠️ Disclaimer
+Native Windows networking does not support raw sockets or packet injection.
 
-This tool is provided for educational and authorized auditing purposes only. The authors are not responsible for any misuse or damage caused by this program. Use only on networks you own or have explicit permission to audit.
+To run Nighthawk Suite on Windows:
 
-📜 License
+wsl --install
+# Install Ubuntu or Kali
+git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
+cd Nighthawk_Suite
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
-Distributed under the MIT License. See LICENSE for more information. EOF git add README.md git commit -m "Fix README formatting" git push
+🚀 Usage
+
+python main.py
+
+Once launched, navigate the cinematic UI to select modules such as:
+
+Network Scan
+
+Packet Sniffer
+
+Device Discovery
+
+Interface Overview
+
+🌍 Platform Support
+
+Platform
+
+Support Level
+
+Notes
+
+Linux
+
+✅ Full
+
+All features supported
+
+macOS
+
+⚠️ Partial
+
+Raw sockets limited; monitor mode varies
+
+Windows
+
+❌ Native support unavailable
+
+Use WSL for full functionality
+
+
+📜 License (MIT)
+
+MIT License
+
+Copyright (c) 2025
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files...
+
+⚠ Disclaimer
+
+This tool is for authorized security testing only.Do not use without explicit permission.
+
+Unauthorized use may violate local, state, or federal laws.
+
+🦅 Nighthawk Suite
+
+Precision. Clarity. Operator‑grade performance.
