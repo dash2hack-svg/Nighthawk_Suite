@@ -1,6 +1,6 @@
 import os, sys, time, subprocess, threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from core.ui import UI, C, W, R, G, B, NC, mini_banner
+from core.ui import UI, C, W, R, G, B, NC, Y, D, mini_banner
 
 class PhishingServer(BaseHTTPRequestHandler):
     def log_message(self, format, *args): return # Silence logs
