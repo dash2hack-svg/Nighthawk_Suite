@@ -24,21 +24,24 @@ Nighthawk v62.0 is a state-of-the-art wireless auditing suite designed for Red T
 * **Hardware Abstraction:** Works with any interface (Alfa, Panda, Internal) by querying driver capabilities dynamically.
 
 ---
-📂 Module Breakdown
-Module	Function
-Encryption Attack	Automated WPA2/WPA3 handshake capture and aircrack-ng integration.
-Enterprise WPE	RADIUS server impersonation for corporate credential harvesting.
-Evil Twin	Rogue Access Point with customizable Captive Portals.
-Loot Repository	HTML "Trophy Room" generation and secure credential storage.
-Recon	Scapy-based autonomous network mapping and OS detection.
-Bluetooth Arsenal	BLE scanning (Cross-Platform) and L2PING flooding (Linux).
-⚠️ Disclaimer
 
-This tool is provided for educational and authorized auditing purposes only. The authors are not responsible for any misuse or damage caused by this program. Use only on networks you own or have explicit permission to audit.
-📜 License
+### 🐧 Linux (Kali / Parrot / Ubuntu)
+*Recommended for full injection and "God Mode" capabilities.*
 
-Distributed under the MIT License. See LICENSE for more information. EOF git add README.md git commit -m "Fix README formatting" git push
+```bash
+# 1. Clone the repository
+git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
+cd Nighthawk_Suite
 
+# 2. Install Dependencies
+sudo apt update
+sudo apt install aircrack-ng hostapd dnsmasq hcxtools macchanger
+
+# 3. Install Python Libraries
+pip install -r requirements.txt
+
+# 4. Launch (Root Required)
+sudo python3 nighthawk.py
 
 ## 📦 Installation & Usage
 🪟 Windows (Auditor Mode)
@@ -70,21 +73,20 @@ PowerShell
 
 pip install -r requirements.txt
 python nighthawk.py
-### 🐧 Linux (Kali / Parrot / Ubuntu)
-*Recommended for full injection and "God Mode" capabilities.*
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
-cd Nighthawk_Suite
+📂 Module Breakdown
+Module	Function
+Encryption Attack	Automated WPA2/WPA3 handshake capture and aircrack-ng integration.
+Enterprise WPE	RADIUS server impersonation for corporate credential harvesting.
+Evil Twin	Rogue Access Point with customizable Captive Portals.
+Loot Repository	HTML "Trophy Room" generation and secure credential storage.
+Recon	Scapy-based autonomous network mapping and OS detection.
+Bluetooth Arsenal	BLE scanning (Cross-Platform) and L2PING flooding (Linux).
 
-# 2. Install Dependencies
-sudo apt update
-sudo apt install aircrack-ng hostapd dnsmasq hcxtools macchanger
+⚠️ Disclaimer
 
-# 3. Install Python Libraries
-pip install -r requirements.txt
+This tool is provided for educational and authorized auditing purposes only. The authors are not responsible for any misuse or damage caused by this program. Use only on networks you own or have explicit permission to audit.
 
-# 4. Launch (Root Required)
-sudo python3 nighthawk.py
+📜 License
 
+Distributed under the MIT License. See LICENSE for more information. EOF git add README.md git commit -m "Fix README formatting" git push
