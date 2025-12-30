@@ -1,5 +1,16 @@
-import os, sys, time, threading, itertools
+import os
+import sys
+import time
+import threading
+import itertools
+import re
 from datetime import datetime
+
+# Performance Optimization: Compiled Regex for ANSI stripping
+ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
+# Export Control
+__all__ = ['UI', 'Spinner', 'mini_banner', 'C', 'W', 'G', 'R', 'Y', 'B', 'NC', 'D']
 
 # Initialize Windows Terminal for ANSI support
 if sys.platform == "win32":
@@ -15,10 +26,21 @@ B = '\033[1m'   # Bold
 NC = '\033[0m'  # Reset
 D = '\033[90m'  # Dark Grey (Subtle)
 
+def mini_banner():
+    """Lightweight header used by sub-modules like EvilTwin."""
+    tag = f"{C}[{W}NIGHTHAWK-MODULE{C}]{NC}"
+    print(f"\n{tag} {D}—{NC} {B}AUTONOMOUS OPERATIONS{NC}")
+    print(f"{D}{'━'*50}{NC}")
+
 class UI:
     @staticmethod
+    def _strip_ansi(text):
+        """Helper to calculate true visible length of strings containing ANSI codes."""
+        return len(ANSI_ESCAPE.sub('', str(text)))
+
+    @staticmethod
     def banner():
-        """Cross-platform terminal clearing for v62.0 Evolution."""
+        """Cross-platform terminal clearing and main framework logo."""
         os.system('cls' if os.name == 'nt' else 'clear')
         print(f"""{C}{B}
     ███╗   ██╗██╗ ██████╗ ██╗  ██╗████████╗██╗  ██╗ █████╗ ██╗    ██╗██╗  ██╗
@@ -44,30 +66,31 @@ class UI:
         width = 70
         print(f"{C}┌──[ {B}{title}{NC}{C} ]{'─'*(width-7-len(title))}┐{NC}")
         for line in lines:
-            # Enhanced color-safe length calculation
-            clean = line
-            for code in [C, W, G, R, Y, B, NC, D]:
-                clean = clean.replace(code, '')
-            padding = width - len(clean) - 2
-            print(f"{C}│ {W}{line}{' '*padding}{C} │{NC}")
+            clean_len = UI._strip_ansi(line)
+            padding = width - clean_len - 2
+            print(f"{C}│ {W}{line}{' '*max(0, padding)}{C} │{NC}")
         print(f"{C}└{'─'*width}┘{NC}")
 
     @staticmethod
     def draw_table(headers, rows):
-        col_widths = [len(h) for h in headers]
+        # Calculate optimal column widths based on visible characters
+        col_widths = [UI._strip_ansi(h) for h in headers]
         for row in rows:
             for i, val in enumerate(row):
-                clean_len = len(str(val).replace(C,'').replace(W,'').replace(NC,'').replace(G,'').replace(R,'').replace(Y,'').replace(D,''))
+                clean_len = UI._strip_ansi(val)
                 if clean_len > col_widths[i]:
                     col_widths[i] = clean_len
 
+        # Construct Header and Separator
         header_str = ""
         separator_str = ""
         for i, h in enumerate(headers):
-            header_str += f"{C} {h:<{col_widths[i]}} {D}│{NC}"
+            padding = col_widths[i] - UI._strip_ansi(h)
+            header_str += f"{C} {h}{' '*padding} {D}│{NC}"
             separator_str += f"{C}{'─'*(col_widths[i]+2)}┼{NC}"
         
-        print(f"{C}┌{separator_str[:-1].replace('┼', '─')}{'─'*10}┐{NC}")
+        # Draw Table
+        print(f"{C}┌{separator_str[:-1].replace('┼', '─')}┐{NC}")
         print(f"{D}│{NC}{header_str}") 
         print(f"{C}├{separator_str[:-1]}┤{NC}")
 
@@ -75,8 +98,7 @@ class UI:
             row_str = ""
             for i, val in enumerate(row):
                 content = str(val)
-                clean_content = content.replace(C,'').replace(W,'').replace(NC,'').replace(G,'').replace(R,'').replace(Y,'').replace(D,'')
-                padding = col_widths[i] - len(clean_content)
+                padding = col_widths[i] - UI._strip_ansi(content)
                 row_str += f" {content}{' '*padding} {D}│{NC}"
             print(f"{D}│{NC}{row_str}")
         print(f"{C}└{separator_str[:-1].replace('┼', '─')}┘{NC}")
@@ -94,18 +116,18 @@ class Spinner:
             sys.stdout.write(f"\r{C}[{next(self.spinner)}]{NC} {self.message}...")
             sys.stdout.flush()
             time.sleep(self.delay)
-            sys.stdout.write('\b' * (len(self.message) + 10))
+            # Efficient line clearing
+            sys.stdout.write('\r' + ' ' * (UI._strip_ansi(self.message) + 10) + '\r')
 
     def __enter__(self):
         self.running = True
-        self.thread = threading.Thread(target=self.spin)
+        self.thread = threading.Thread(target=self.spin, daemon=True)
         self.thread.start()
+        return self
 
-    def __exit__(self, exception, value, tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.running = False
-        self.thread.join()
+        if self.thread:
+            self.thread.join()
         sys.stdout.write(f"\r{G}[✔]{NC} {self.message} Complete.      \n")
         sys.stdout.flush()
-
-    def mini_banner():
-    print('--- Nighthawk ---')
