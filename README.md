@@ -35,6 +35,7 @@ cd Nighthawk_Suite
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+sudo ./nighthawk.py
 ```
 
 #### macOS
@@ -58,14 +59,6 @@ cd Nighthawk_Suite
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
-
----
-
-### 🚀 Usage
-Run the main application:
-```bash
-python main.py
 ```
 
 Navigate through the cinematic UI to access modules like:
