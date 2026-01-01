@@ -1,98 +1,52 @@
-<h1 align="center">🦅 Nighthawk Suite</h1>
-<p align="center"><strong>Precision. Clarity. Operator‑grade performance.</strong></p>
+# Nighthawk Suite
 
-<p align="center">
-  <img src="assets/logo.png" width="180" alt="Nighthawk Suite Logo"/>
-</p>
+**Cross-platform wireless assessment framework for authorized security testing (Linux / Windows / macOS).**
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge"/>
-  <img src="https://img.shields.io/github/v/release/dash2hack-svg/Nighthawk_Suite?style=for-the-badge"/>
-</p>
+Nighthawk Suite is a Python-based framework designed to help security professionals and network owners perform **authorized wireless security assessments** in a controlled, auditable way. It provides automation around common defensive and offensive techniques used in Wi‑Fi and network security testing while emphasizing **safety, scoping, and explicit permission** at every step.
+
+> **Important:** Nighthawk Suite is intended **only** for networks and systems you own or are explicitly authorized in writing to assess. Misuse may be illegal and is strictly discouraged.
 
 ---
 
-### 🎯 Overview
-Nighthawk Suite is a **cinematic, operator‑grade network reconnaissance toolkit** designed for modern security professionals. It’s built with clarity, speed, and visual immersion to help you master network reconnaissance like never before.
+## Key capabilities
+
+### Wireless assessment (Linux focus)
+
+- **Handshake capture (WPA2/WPA3 where supported)**  
+  - Automates discovery of nearby access points and attempts to capture 4‑way handshakes for offline password strength testing.
+- **Attack orchestration**  
+  - Integrates with tools like `aircrack-ng` and `hcxtools` for end‑to‑end workflows (capture → convert → offline crack).
+- **Interface / driver health checks**  
+  - Helps avoid unstable configurations by checking adapter and driver capabilities before attempting injection‑heavy operations.
+
+> **Note:** Some features (such as injection) depend on specific chipsets and drivers and may only work on Linux distributions such as Kali, Parrot, or Ubuntu.
+
+### Enterprise / EAP testing (authorized lab environments only)
+
+- **RADIUS / EAP test harness (WPE‑style behavior)**  
+  - Helps test whether enterprise Wi‑Fi clients properly validate certificates and are resistant to credential phishing in **authorized lab or test environments**.
+- **Rogue AP scenarios (Evil Twin)**  
+  - Spins up controlled, clearly marked test access points and captive portals for social engineering awareness training and security assessments.
+
+> These features are **only for environments where you have explicit authorization** (for example: internal red team, defensive lab setups, or training ranges). Do not deploy against production networks without written approval and well‑defined scope.
+
+### Cross-platform support
+
+- **Linux (Kali / Parrot / Ubuntu recommended)**  
+  - Full feature set, including active wireless testing modules (where hardware and drivers support it).
+- **Windows (Auditor mode)**  
+  - Focus on passive recon, loot management, and offline cracking.
+- **macOS (Recon mode)**  
+  - Passive recon, limited BLE scanning, and loot management where system APIs and drivers allow.
+
+Nighthawk Suite attempts to detect host OS and hardware capabilities and enables only the features that are safe and supported on that platform.
 
 ---
 
-### ⚡ Features
-- 🔍 **Network Scanning**: Identify active hosts, open ports, and network topology with precision.
-- 📡 **Packet Sniffing**: Capture and analyze packets in real time (*Linux/macOS only*).
-- 🛰 **Device Discovery**: Enumerate devices, interfaces, and network metadata with clarity.
-- 🎨 **Cinematic UI**: Rich terminal interface with animations, themes, and operator‑grade visuals.
-- 🧩 **Modular Architecture**: Easily extend or customize modules for your workflow.
+## Installation and usage
 
----
+### 1. Clone the repository
 
-### 🛠 Installation
-#### Linux (Recommended)
 ```bash
 git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
 cd Nighthawk_Suite
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-sudo ./nighthawk.py
-```
-
-#### macOS
-```bash
-git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
-cd Nighthawk_Suite
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-sudo python main.py
-```
-
-#### Windows (WSL Required)
-> **Note:** Native Windows networking does not support raw sockets or packet injection. Use WSL for full functionality.
-
-```bash
-wsl --install
-# Install Ubuntu or Kali
-git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
-cd Nighthawk_Suite
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-Navigate through the cinematic UI to access modules like:
-- **Network Scan**
-- **Packet Sniffer**
-- **Device Discovery**
-- **Interface Overview**
-
----
-
-### 🌍 Platform Support
-| Platform | Support Level | Notes |
-|----------|---------------|-------|
-| **Linux**  | ✅ Full          | All features supported. |
-| **macOS**  | ⚠️ Partial       | Limitations with raw sockets; monitor mode varies. |
-| **Windows**| ❌ Unsupported   | Use WSL for full functionality. |
-
----
-
-### 📜 License
-This project is licensed under the **MIT License**.
-
-```text
-MIT License
-
-Copyright (c) 2025
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files...
-```
-
----
-
-### ⚠ Disclaimer
-This tool is for **authorized security testing only**. Do not use without explicit permission. Unauthorized use may violate local, state, or federal laws.
-
----
