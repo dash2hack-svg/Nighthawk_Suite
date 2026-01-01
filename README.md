@@ -1,1112 +1,169 @@
-#!/usr/bin/env python3
-import os
-import sys
-import subprocess
-import time
-import shutil
-from pathlib import Path
-
-# v62.0 Path Standardization
-BASE_DIR = Path(__file__).resolve().parent
-sys.path.append(str(BASE_DIR))
-
-from core.hardware import HardwareSync
-from core.ui import UI, C, W, B, NC, R, G, Y, D
-from core.config import load_config, save_config
-
-# Import All Engines
-from modules.encryption import EncryptionAttack
-from modules.cracking import HandshakeCracker
-from modules.bluetooth import BluetoothAttack
-from modules.recon import NetworkRecon
-from modules.loot import LootManager
-from modules.ble import BLEAttack
-from modules.evil_twin import EvilTwin
-from modules.enterprise import EnterpriseAttack
-
-
-class Nighthawk:
-    def __init__(self):
-        # Universal Path Handling (Windows/Mac/Linux safe)
-        self.proj_dir = Path.home() / "Nighthawk_Suite" / "Loot"
-        self.proj_dir.mkdir(parents=True, exist_ok=True)
-
-        self.hw = HardwareSync()
-        self.iface = None
-        self.bands = "bg"
-        self.config = load_config()
-
-    def check_admin(self):
-        """Cross-Platform Root/Admin Check"""
-        try:
-            return os.getuid() == 0
-        except AttributeError:
-            import ctypes
-            return ctypes.windll.shell32.IsUserAnAdmin() != 0
-
-    def clean_input(self):
-        """Cross-Platform Input Flush"""
-        try:
-            import msvcrt
-            while msvcrt.kbhit():
-                msvcrt.getch()
-        except ImportError:
-            try:
-                import termios  # noqa: F401
-                import tty      # noqa: F401
-                sys.stdin.flush()
-            except Exception:
-                pass
-        except Exception:
-            pass
-
-    def safe_exec(self, func):
-        try:
-            func()
-        except KeyboardInterrupt:
-            pass
-        except Exception as e:
-            print(f"\n{R}[!] Error: {e}{NC}")
-            time.sleep(2)
-
-    def check_dependencies(self):
-        """
-        Platform-Specific Toolchain Verification
-
-        Only installs packages on Linux if missing. Other platforms
-        are expected to have their dependencies managed manually.
-        """
-        tools = ["nmap"]
-        if sys.platform == "linux":
-            # Added hostapd and dnsmasq for Evil Twin support
-            tools.extend([
-                "aircrack-ng",
-                "airodump-ng",
-                "macchanger",
-                "hcitool",
-                "hostapd",
-                "dnsmasq",
-            ])
-
-        missing = [t for t in tools if not shutil.which(t)]
-
-        if missing and sys.platform == "linux":
-            print(f"\n{Y}[!] Installing missing tools: {', '.join(missing)}{NC}")
-            subprocess.run(
-                f"sudo apt update && sudo apt install -y {' '.join(missing)}",
-                shell=True,
-            )
-
-    def _print_scope_warning(self, title):
-        """
-        Standardized scope / authorization reminder.
-        Called before launching high-impact modules.
-        """
-        print(f"\n{Y}[!] Authorized use reminder{NC}")
-        print(
-            f"{D}This {title} module is intended "
-            "only for networks and systems where you have explicit, written "
-            "permission to perform security testing. "
-            "Misuse may be illegal and is strongly discouraged.{NC}"
-        )
-        time.sleep(1.5)
-
-    def main_menu(self):
-        if self.config.get("handle") == "UNKNOWN OPERATOR":
-            save_config("dash")
-            self.config = load_config()
-
-        while True:
-            UI.banner()
-
-            # Dynamic Status Indicator
-            iface_display = (
-                f"{G}{self.iface}{NC}"
-                if self.iface
-                else f"{R}DISCONNECTED{NC}"
-            )
-
-            # Bluetooth Mode Detection
-            bt_mode = "Classic" if sys.platform == "linux" else "BLE-Only"
-
-            UI.print_box(
-                [
-                    f"OPERATOR   : {self.config.get('handle')}",
-                    f"INTERFACE  : {iface_display}",
-                    f"BAND MODE  : {self.bands.upper()}",
-                ],
-                title="v62.0 OPERATIONAL STATUS",
-            )
-
-            print(f"\n{C} [ AVAILABLE MODULES ]{NC}")
-            print(
-                f" {C}1.{NC} {W}Wireless Assessment{NC} "
-                f"{D}:: Capture & Testing Workflow{NC}"
-            )
-            print(
-                f" {C}2.{NC} {W}Bluetooth Toolkit{NC} "
-                f"{D}:: {bt_mode} Scanning Modules{NC}"
-            )
-            print(
-                f" {C}3.{NC} {W}Network Reconnaissance{NC} "
-                f"{D}:: LAN Mapping & OS Detection{NC}"
-            )
-            print(
-                f" {C}4.{NC} {W}Offline Analysis{NC} "
-                f"{D}:: Hashcat & Password Cracking{NC}"
-            )
-            print(
-                f" {C}5.{NC} {W}Loot Repository{NC} "
-                f"{D}:: Reports & Captured Data{NC}"
-            )
-            print(
-                f" {C}6.{NC} {W}Rogue AP Simulation{NC} "
-                f"{D}:: Captive Portal / Awareness Labs{NC}"
-            )
-            print(
-                f" {C}7.{NC} {W}Enterprise Wi-Fi Test Harness{NC} "
-                f"{D}:: EAP / RADIUS Validation{NC}"
-            )
-            print(
-                f" {C}8.{NC} {Y}Reconfigure Hardware{NC} "
-                f"{D}:: Select Wi‑Fi Interface / Mode{NC}"
-            )
-            print(
-                f" {C}9.{NC} {W}Exit Suite{NC} "
-                f"{D}:: Restore & Shutdown{NC}"
-            )
-
-            try:
-                c = input(f"\n {B}nighthawk{NC} {C}»{NC} ").strip()
-            except EOFError:
-                continue
-
-            if c == "1":
-                def launch():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EncryptionAttack(
-                        self.iface,
-                        self.bands,
-                        self.proj_dir
-                    ).run()
-
-                self.safe_exec(launch)
-
-            elif c == "2":
-                # Smart Switching for Bluetooth Modules
-                if sys.platform == "linux":
-                    self.safe_exec(BluetoothAttack().run)
-                else:
-                    self.safe_exec(BLEAttack(self.proj_dir).run)
-
-            elif c == "3":
-                if (
-                    self.iface
-                    and "mon" in self.iface
-                    and sys.platform == "linux"
-                ):
-                    print(
-                        f"\n{R}[!] Interface in monitor mode. "
-                        f"Connect to LAN first for recon.{NC}"
-                    )
-                    time.sleep(2)
-                else:
-                    self.safe_exec(NetworkRecon(self.iface).run)
-
-            elif c == "4":
-                self.safe_exec(lambda: HandshakeCracker(self.proj_dir).run())
-
-            elif c == "5":
-                self.safe_exec(lambda: LootManager(self.proj_dir).run())
-
-            elif c == "6":
-                # Rogue AP / Evil Twin – extra scope reminder
-                self._print_scope_warning("rogue access point")
-
-                def launch_et():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EvilTwin(self.iface, self.proj_dir).launch()
-
-                self.safe_exec(launch_et)
-
-            elif c == "7":
-                # Enterprise WPE – extra scope reminder
-                self._print_scope_warning("enterprise Wi‑Fi / EAP")
-
-                def launch_ent():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EnterpriseAttack(self.iface, self.proj_dir).launch()
-
-                self.safe_exec(launch_ent)
-
-            elif c == "8":
-                # Re-run hardware setup
-                self.iface = None
-                self.hw.setup()
-
-            elif c == "9":
-                print(f"\n{Y}[*] Shutting down Nighthawk Suite...{NC}")
-                sys.exit()
-
-    def run(self):
-        if sys.platform == "linux":
-            # Allow local root X11 on some desktops (best-effort, ignore errors)
-            os.system("xhost +local:root > /dev/null 2>&1")
-
-        self.check_dependencies()
-
-        try:
-            self.main_menu()
-        except KeyboardInterrupt:
-            sys.exit()
-
-
-if __name__ == "__main__":
-    app = Nighthawk()
-
-    if not app.check_admin():
-        print(f"{R}[!] Administrator/Root privileges required.{NC}")
-        if sys.platform == "win32":
-            print(f"{D} Right-click → Run as Administrator{NC}")
-        else:
-            print(f"{D} Try: sudo python3 nighthawk.py{NC}")
-        sys.exit(1)
-
-    app.run()
-#!/usr/bin/env python3
-import os
-import sys
-import subprocess
-import time
-import shutil
-from pathlib import Path
-
-# v62.0 Path Standardization
-BASE_DIR = Path(__file__).resolve().parent
-sys.path.append(str(BASE_DIR))
-
-from core.hardware import HardwareSync
-from core.ui import UI, C, W, B, NC, R, G, Y, D
-from core.config import load_config, save_config
-
-# Import All Engines
-from modules.encryption import EncryptionAttack
-from modules.cracking import HandshakeCracker
-from modules.bluetooth import BluetoothAttack
-from modules.recon import NetworkRecon
-from modules.loot import LootManager
-from modules.ble import BLEAttack
-from modules.evil_twin import EvilTwin
-from modules.enterprise import EnterpriseAttack
-
-
-class Nighthawk:
-    def __init__(self):
-        # Universal Path Handling (Windows/Mac/Linux safe)
-        self.proj_dir = Path.home() / "Nighthawk_Suite" / "Loot"
-        self.proj_dir.mkdir(parents=True, exist_ok=True)
-
-        self.hw = HardwareSync()
-        self.iface = None
-        self.bands = "bg"
-        self.config = load_config()
-
-    def check_admin(self):
-        """Cross-Platform Root/Admin Check"""
-        try:
-            return os.getuid() == 0
-        except AttributeError:
-            import ctypes
-            return ctypes.windll.shell32.IsUserAnAdmin() != 0
-
-    def clean_input(self):
-        """Cross-Platform Input Flush"""
-        try:
-            import msvcrt
-            while msvcrt.kbhit():
-                msvcrt.getch()
-        except ImportError:
-            try:
-                import termios  # noqa: F401
-                import tty      # noqa: F401
-                sys.stdin.flush()
-            except Exception:
-                pass
-        except Exception:
-            pass
-
-    def safe_exec(self, func):
-        try:
-            func()
-        except KeyboardInterrupt:
-            pass
-        except Exception as e:
-            print(f"\n{R}[!] Error: {e}{NC}")
-            time.sleep(2)
-
-    def check_dependencies(self):
-        """
-        Platform-Specific Toolchain Verification
-
-        Only installs packages on Linux if missing. Other platforms
-        are expected to have their dependencies managed manually.
-        """
-        tools = ["nmap"]
-        if sys.platform == "linux":
-            # Added hostapd and dnsmasq for Evil Twin support
-            tools.extend([
-                "aircrack-ng",
-                "airodump-ng",
-                "macchanger",
-                "hcitool",
-                "hostapd",
-                "dnsmasq",
-            ])
-
-        missing = [t for t in tools if not shutil.which(t)]
-
-        if missing and sys.platform == "linux":
-            print(f"\n{Y}[!] Installing missing tools: {', '.join(missing)}{NC}")
-            subprocess.run(
-                f"sudo apt update && sudo apt install -y {' '.join(missing)}",
-                shell=True,
-            )
-
-    def _print_scope_warning(self, title):
-        """
-        Standardized scope / authorization reminder.
-        Called before launching high-impact modules.
-        """
-        print(f"\n{Y}[!] Authorized use reminder{NC}")
-        print(
-            f"{D}This {title} module is intended "
-            "only for networks and systems where you have explicit, written "
-            "permission to perform security testing. "
-            "Misuse may be illegal and is strongly discouraged.{NC}"
-        )
-        time.sleep(1.5)
-
-    def main_menu(self):
-        if self.config.get("handle") == "UNKNOWN OPERATOR":
-            save_config("dash")
-            self.config = load_config()
-
-        while True:
-            UI.banner()
-
-            # Dynamic Status Indicator
-            iface_display = (
-                f"{G}{self.iface}{NC}"
-                if self.iface
-                else f"{R}DISCONNECTED{NC}"
-            )
-
-            # Bluetooth Mode Detection
-            bt_mode = "Classic" if sys.platform == "linux" else "BLE-Only"
-
-            UI.print_box(
-                [
-                    f"OPERATOR   : {self.config.get('handle')}",
-                    f"INTERFACE  : {iface_display}",
-                    f"BAND MODE  : {self.bands.upper()}",
-                ],
-                title="v62.0 OPERATIONAL STATUS",
-            )
-
-            print(f"\n{C} [ AVAILABLE MODULES ]{NC}")
-            print(
-                f" {C}1.{NC} {W}Wireless Assessment{NC} "
-                f"{D}:: Capture & Testing Workflow{NC}"
-            )
-            print(
-                f" {C}2.{NC} {W}Bluetooth Toolkit{NC} "
-                f"{D}:: {bt_mode} Scanning Modules{NC}"
-            )
-            print(
-                f" {C}3.{NC} {W}Network Reconnaissance{NC} "
-                f"{D}:: LAN Mapping & OS Detection{NC}"
-            )
-            print(
-                f" {C}4.{NC} {W}Offline Analysis{NC} "
-                f"{D}:: Hashcat & Password Cracking{NC}"
-            )
-            print(
-                f" {C}5.{NC} {W}Loot Repository{NC} "
-                f"{D}:: Reports & Captured Data{NC}"
-            )
-            print(
-                f" {C}6.{NC} {W}Rogue AP Simulation{NC} "
-                f"{D}:: Captive Portal / Awareness Labs{NC}"
-            )
-            print(
-                f" {C}7.{NC} {W}Enterprise Wi-Fi Test Harness{NC} "
-                f"{D}:: EAP / RADIUS Validation{NC}"
-            )
-            print(
-                f" {C}8.{NC} {Y}Reconfigure Hardware{NC} "
-                f"{D}:: Select Wi‑Fi Interface / Mode{NC}"
-            )
-            print(
-                f" {C}9.{NC} {W}Exit Suite{NC} "
-                f"{D}:: Restore & Shutdown{NC}"
-            )
-
-            try:
-                c = input(f"\n {B}nighthawk{NC} {C}»{NC} ").strip()
-            except EOFError:
-                continue
-
-            if c == "1":
-                def launch():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EncryptionAttack(
-                        self.iface,
-                        self.bands,
-                        self.proj_dir
-                    ).run()
-
-                self.safe_exec(launch)
-
-            elif c == "2":
-                # Smart Switching for Bluetooth Modules
-                if sys.platform == "linux":
-                    self.safe_exec(BluetoothAttack().run)
-                else:
-                    self.safe_exec(BLEAttack(self.proj_dir).run)
-
-            elif c == "3":
-                if (
-                    self.iface
-                    and "mon" in self.iface
-                    and sys.platform == "linux"
-                ):
-                    print(
-                        f"\n{R}[!] Interface in monitor mode. "
-                        f"Connect to LAN first for recon.{NC}"
-                    )
-                    time.sleep(2)
-                else:
-                    self.safe_exec(NetworkRecon(self.iface).run)
-
-            elif c == "4":
-                self.safe_exec(lambda: HandshakeCracker(self.proj_dir).run())
-
-            elif c == "5":
-                self.safe_exec(lambda: LootManager(self.proj_dir).run())
-
-            elif c == "6":
-                # Rogue AP / Evil Twin – extra scope reminder
-                self._print_scope_warning("rogue access point")
-
-                def launch_et():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EvilTwin(self.iface, self.proj_dir).launch()
-
-                self.safe_exec(launch_et)
-
-            elif c == "7":
-                # Enterprise WPE – extra scope reminder
-                self._print_scope_warning("enterprise Wi‑Fi / EAP")
-
-                def launch_ent():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EnterpriseAttack(self.iface, self.proj_dir).launch()
-
-                self.safe_exec(launch_ent)
-
-            elif c == "8":
-                # Re-run hardware setup
-                self.iface = None
-                self.hw.setup()
-
-            elif c == "9":
-                print(f"\n{Y}[*] Shutting down Nighthawk Suite...{NC}")
-                sys.exit()
-
-    def run(self):
-        if sys.platform == "linux":
-            # Allow local root X11 on some desktops (best-effort, ignore errors)
-            os.system("xhost +local:root > /dev/null 2>&1")
-
-        self.check_dependencies()
-
-        try:
-            self.main_menu()
-        except KeyboardInterrupt:
-            sys.exit()
-
-
-if __name__ == "__main__":
-    app = Nighthawk()
-
-    if not app.check_admin():
-        print(f"{R}[!] Administrator/Root privileges required.{NC}")
-        if sys.platform == "win32":
-            print(f"{D} Right-click → Run as Administrator{NC}")
-        else:
-            print(f"{D} Try: sudo python3 nighthawk.py{NC}")
-        sys.exit(1)
-
-    app.run()
-#!/usr/bin/env python3
-import os
-import sys
-import subprocess
-import time
-import shutil
-from pathlib import Path
-
-# v62.0 Path Standardization
-BASE_DIR = Path(__file__).resolve().parent
-sys.path.append(str(BASE_DIR))
-
-from core.hardware import HardwareSync
-from core.ui import UI, C, W, B, NC, R, G, Y, D
-from core.config import load_config, save_config
-
-# Import All Engines
-from modules.encryption import EncryptionAttack
-from modules.cracking import HandshakeCracker
-from modules.bluetooth import BluetoothAttack
-from modules.recon import NetworkRecon
-from modules.loot import LootManager
-from modules.ble import BLEAttack
-from modules.evil_twin import EvilTwin
-from modules.enterprise import EnterpriseAttack
-
-
-class Nighthawk:
-    def __init__(self):
-        # Universal Path Handling (Windows/Mac/Linux safe)
-        self.proj_dir = Path.home() / "Nighthawk_Suite" / "Loot"
-        self.proj_dir.mkdir(parents=True, exist_ok=True)
-
-        self.hw = HardwareSync()
-        self.iface = None
-        self.bands = "bg"
-        self.config = load_config()
-
-    def check_admin(self):
-        """Cross-Platform Root/Admin Check"""
-        try:
-            return os.getuid() == 0
-        except AttributeError:
-            import ctypes
-            return ctypes.windll.shell32.IsUserAnAdmin() != 0
-
-    def clean_input(self):
-        """Cross-Platform Input Flush"""
-        try:
-            import msvcrt
-            while msvcrt.kbhit():
-                msvcrt.getch()
-        except ImportError:
-            try:
-                import termios  # noqa: F401
-                import tty      # noqa: F401
-                sys.stdin.flush()
-            except Exception:
-                pass
-        except Exception:
-            pass
-
-    def safe_exec(self, func):
-        try:
-            func()
-        except KeyboardInterrupt:
-            pass
-        except Exception as e:
-            print(f"\n{R}[!] Error: {e}{NC}")
-            time.sleep(2)
-
-    def check_dependencies(self):
-        """
-        Platform-Specific Toolchain Verification
-
-        Only installs packages on Linux if missing. Other platforms
-        are expected to have their dependencies managed manually.
-        """
-        tools = ["nmap"]
-        if sys.platform == "linux":
-            # Added hostapd and dnsmasq for Evil Twin support
-            tools.extend([
-                "aircrack-ng",
-                "airodump-ng",
-                "macchanger",
-                "hcitool",
-                "hostapd",
-                "dnsmasq",
-            ])
-
-        missing = [t for t in tools if not shutil.which(t)]
-
-        if missing and sys.platform == "linux":
-            print(f"\n{Y}[!] Installing missing tools: {', '.join(missing)}{NC}")
-            subprocess.run(
-                f"sudo apt update && sudo apt install -y {' '.join(missing)}",
-                shell=True,
-            )
-
-    def _print_scope_warning(self, title):
-        """
-        Standardized scope / authorization reminder.
-        Called before launching high-impact modules.
-        """
-        print(f"\n{Y}[!] Authorized use reminder{NC}")
-        print(
-            f"{D}This {title} module is intended "
-            "only for networks and systems where you have explicit, written "
-            "permission to perform security testing. "
-            "Misuse may be illegal and is strongly discouraged.{NC}"
-        )
-        time.sleep(1.5)
-
-    def main_menu(self):
-        if self.config.get("handle") == "UNKNOWN OPERATOR":
-            save_config("dash")
-            self.config = load_config()
-
-        while True:
-            UI.banner()
-
-            # Dynamic Status Indicator
-            iface_display = (
-                f"{G}{self.iface}{NC}"
-                if self.iface
-                else f"{R}DISCONNECTED{NC}"
-            )
-
-            # Bluetooth Mode Detection
-            bt_mode = "Classic" if sys.platform == "linux" else "BLE-Only"
-
-            UI.print_box(
-                [
-                    f"OPERATOR   : {self.config.get('handle')}",
-                    f"INTERFACE  : {iface_display}",
-                    f"BAND MODE  : {self.bands.upper()}",
-                ],
-                title="v62.0 OPERATIONAL STATUS",
-            )
-
-            print(f"\n{C} [ AVAILABLE MODULES ]{NC}")
-            print(
-                f" {C}1.{NC} {W}Wireless Assessment{NC} "
-                f"{D}:: Capture & Testing Workflow{NC}"
-            )
-            print(
-                f" {C}2.{NC} {W}Bluetooth Toolkit{NC} "
-                f"{D}:: {bt_mode} Scanning Modules{NC}"
-            )
-            print(
-                f" {C}3.{NC} {W}Network Reconnaissance{NC} "
-                f"{D}:: LAN Mapping & OS Detection{NC}"
-            )
-            print(
-                f" {C}4.{NC} {W}Offline Analysis{NC} "
-                f"{D}:: Hashcat & Password Cracking{NC}"
-            )
-            print(
-                f" {C}5.{NC} {W}Loot Repository{NC} "
-                f"{D}:: Reports & Captured Data{NC}"
-            )
-            print(
-                f" {C}6.{NC} {W}Rogue AP Simulation{NC} "
-                f"{D}:: Captive Portal / Awareness Labs{NC}"
-            )
-            print(
-                f" {C}7.{NC} {W}Enterprise Wi-Fi Test Harness{NC} "
-                f"{D}:: EAP / RADIUS Validation{NC}"
-            )
-            print(
-                f" {C}8.{NC} {Y}Reconfigure Hardware{NC} "
-                f"{D}:: Select Wi‑Fi Interface / Mode{NC}"
-            )
-            print(
-                f" {C}9.{NC} {W}Exit Suite{NC} "
-                f"{D}:: Restore & Shutdown{NC}"
-            )
-
-            try:
-                c = input(f"\n {B}nighthawk{NC} {C}»{NC} ").strip()
-            except EOFError:
-                continue
-
-            if c == "1":
-                def launch():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EncryptionAttack(
-                        self.iface,
-                        self.bands,
-                        self.proj_dir
-                    ).run()
-
-                self.safe_exec(launch)
-
-            elif c == "2":
-                # Smart Switching for Bluetooth Modules
-                if sys.platform == "linux":
-                    self.safe_exec(BluetoothAttack().run)
-                else:
-                    self.safe_exec(BLEAttack(self.proj_dir).run)
-
-            elif c == "3":
-                if (
-                    self.iface
-                    and "mon" in self.iface
-                    and sys.platform == "linux"
-                ):
-                    print(
-                        f"\n{R}[!] Interface in monitor mode. "
-                        f"Connect to LAN first for recon.{NC}"
-                    )
-                    time.sleep(2)
-                else:
-                    self.safe_exec(NetworkRecon(self.iface).run)
-
-            elif c == "4":
-                self.safe_exec(lambda: HandshakeCracker(self.proj_dir).run())
-
-            elif c == "5":
-                self.safe_exec(lambda: LootManager(self.proj_dir).run())
-
-            elif c == "6":
-                # Rogue AP / Evil Twin – extra scope reminder
-                self._print_scope_warning("rogue access point")
-
-                def launch_et():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EvilTwin(self.iface, self.proj_dir).launch()
-
-                self.safe_exec(launch_et)
-
-            elif c == "7":
-                # Enterprise WPE – extra scope reminder
-                self._print_scope_warning("enterprise Wi‑Fi / EAP")
-
-                def launch_ent():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EnterpriseAttack(self.iface, self.proj_dir).launch()
-
-                self.safe_exec(launch_ent)
-
-            elif c == "8":
-                # Re-run hardware setup
-                self.iface = None
-                self.hw.setup()
-
-            elif c == "9":
-                print(f"\n{Y}[*] Shutting down Nighthawk Suite...{NC}")
-                sys.exit()
-
-    def run(self):
-        if sys.platform == "linux":
-            # Allow local root X11 on some desktops (best-effort, ignore errors)
-            os.system("xhost +local:root > /dev/null 2>&1")
-
-        self.check_dependencies()
-
-        try:
-            self.main_menu()
-        except KeyboardInterrupt:
-            sys.exit()
-
-
-if __name__ == "__main__":
-    app = Nighthawk()
-
-    if not app.check_admin():
-        print(f"{R}[!] Administrator/Root privileges required.{NC}")
-        if sys.platform == "win32":
-            print(f"{D} Right-click → Run as Administrator{NC}")
-        else:
-            print(f"{D} Try: sudo python3 nighthawk.py{NC}")
-        sys.exit(1)
-
-    app.run()
-#!/usr/bin/env python3
-import os
-import sys
-import subprocess
-import time
-import shutil
-from pathlib import Path
-
-# v62.0 Path Standardization
-BASE_DIR = Path(__file__).resolve().parent
-sys.path.append(str(BASE_DIR))
-
-from core.hardware import HardwareSync
-from core.ui import UI, C, W, B, NC, R, G, Y, D
-from core.config import load_config, save_config
-
-# Import All Engines
-from modules.encryption import EncryptionAttack
-from modules.cracking import HandshakeCracker
-from modules.bluetooth import BluetoothAttack
-from modules.recon import NetworkRecon
-from modules.loot import LootManager
-from modules.ble import BLEAttack
-from modules.evil_twin import EvilTwin
-from modules.enterprise import EnterpriseAttack
-
-
-class Nighthawk:
-    def __init__(self):
-        # Universal Path Handling (Windows/Mac/Linux safe)
-        self.proj_dir = Path.home() / "Nighthawk_Suite" / "Loot"
-        self.proj_dir.mkdir(parents=True, exist_ok=True)
-
-        self.hw = HardwareSync()
-        self.iface = None
-        self.bands = "bg"
-        self.config = load_config()
-
-    def check_admin(self):
-        """Cross-Platform Root/Admin Check"""
-        try:
-            return os.getuid() == 0
-        except AttributeError:
-            import ctypes
-            return ctypes.windll.shell32.IsUserAnAdmin() != 0
-
-    def clean_input(self):
-        """Cross-Platform Input Flush"""
-        try:
-            import msvcrt
-            while msvcrt.kbhit():
-                msvcrt.getch()
-        except ImportError:
-            try:
-                import termios  # noqa: F401
-                import tty      # noqa: F401
-                sys.stdin.flush()
-            except Exception:
-                pass
-        except Exception:
-            pass
-
-    def safe_exec(self, func):
-        try:
-            func()
-        except KeyboardInterrupt:
-            pass
-        except Exception as e:
-            print(f"\n{R}[!] Error: {e}{NC}")
-            time.sleep(2)
-
-    def check_dependencies(self):
-        """
-        Platform-Specific Toolchain Verification
-
-        Only installs packages on Linux if missing. Other platforms
-        are expected to have their dependencies managed manually.
-        """
-        tools = ["nmap"]
-        if sys.platform == "linux":
-            # Added hostapd and dnsmasq for Evil Twin support
-            tools.extend([
-                "aircrack-ng",
-                "airodump-ng",
-                "macchanger",
-                "hcitool",
-                "hostapd",
-                "dnsmasq",
-            ])
-
-        missing = [t for t in tools if not shutil.which(t)]
-
-        if missing and sys.platform == "linux":
-            print(f"\n{Y}[!] Installing missing tools: {', '.join(missing)}{NC}")
-            subprocess.run(
-                f"sudo apt update && sudo apt install -y {' '.join(missing)}",
-                shell=True,
-            )
-
-    def _print_scope_warning(self, title):
-        """
-        Standardized scope / authorization reminder.
-        Called before launching high-impact modules.
-        """
-        print(f"\n{Y}[!] Authorized use reminder{NC}")
-        print(
-            f"{D}This {title} module is intended "
-            "only for networks and systems where you have explicit, written "
-            "permission to perform security testing. "
-            "Misuse may be illegal and is strongly discouraged.{NC}"
-        )
-        time.sleep(1.5)
-
-    def main_menu(self):
-        if self.config.get("handle") == "UNKNOWN OPERATOR":
-            save_config("dash")
-            self.config = load_config()
-
-        while True:
-            UI.banner()
-
-            # Dynamic Status Indicator
-            iface_display = (
-                f"{G}{self.iface}{NC}"
-                if self.iface
-                else f"{R}DISCONNECTED{NC}"
-            )
-
-            # Bluetooth Mode Detection
-            bt_mode = "Classic" if sys.platform == "linux" else "BLE-Only"
-
-            UI.print_box(
-                [
-                    f"OPERATOR   : {self.config.get('handle')}",
-                    f"INTERFACE  : {iface_display}",
-                    f"BAND MODE  : {self.bands.upper()}",
-                ],
-                title="v62.0 OPERATIONAL STATUS",
-            )
-
-            print(f"\n{C} [ AVAILABLE MODULES ]{NC}")
-            print(
-                f" {C}1.{NC} {W}Wireless Assessment{NC} "
-                f"{D}:: Capture & Testing Workflow{NC}"
-            )
-            print(
-                f" {C}2.{NC} {W}Bluetooth Toolkit{NC} "
-                f"{D}:: {bt_mode} Scanning Modules{NC}"
-            )
-            print(
-                f" {C}3.{NC} {W}Network Reconnaissance{NC} "
-                f"{D}:: LAN Mapping & OS Detection{NC}"
-            )
-            print(
-                f" {C}4.{NC} {W}Offline Analysis{NC} "
-                f"{D}:: Hashcat & Password Cracking{NC}"
-            )
-            print(
-                f" {C}5.{NC} {W}Loot Repository{NC} "
-                f"{D}:: Reports & Captured Data{NC}"
-            )
-            print(
-                f" {C}6.{NC} {W}Rogue AP Simulation{NC} "
-                f"{D}:: Captive Portal / Awareness Labs{NC}"
-            )
-            print(
-                f" {C}7.{NC} {W}Enterprise Wi-Fi Test Harness{NC} "
-                f"{D}:: EAP / RADIUS Validation{NC}"
-            )
-            print(
-                f" {C}8.{NC} {Y}Reconfigure Hardware{NC} "
-                f"{D}:: Select Wi‑Fi Interface / Mode{NC}"
-            )
-            print(
-                f" {C}9.{NC} {W}Exit Suite{NC} "
-                f"{D}:: Restore & Shutdown{NC}"
-            )
-
-            try:
-                c = input(f"\n {B}nighthawk{NC} {C}»{NC} ").strip()
-            except EOFError:
-                continue
-
-            if c == "1":
-                def launch():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EncryptionAttack(
-                        self.iface,
-                        self.bands,
-                        self.proj_dir
-                    ).run()
-
-                self.safe_exec(launch)
-
-            elif c == "2":
-                # Smart Switching for Bluetooth Modules
-                if sys.platform == "linux":
-                    self.safe_exec(BluetoothAttack().run)
-                else:
-                    self.safe_exec(BLEAttack(self.proj_dir).run)
-
-            elif c == "3":
-                if (
-                    self.iface
-                    and "mon" in self.iface
-                    and sys.platform == "linux"
-                ):
-                    print(
-                        f"\n{R}[!] Interface in monitor mode. "
-                        f"Connect to LAN first for recon.{NC}"
-                    )
-                    time.sleep(2)
-                else:
-                    self.safe_exec(NetworkRecon(self.iface).run)
-
-            elif c == "4":
-                self.safe_exec(lambda: HandshakeCracker(self.proj_dir).run())
-
-            elif c == "5":
-                self.safe_exec(lambda: LootManager(self.proj_dir).run())
-
-            elif c == "6":
-                # Rogue AP / Evil Twin – extra scope reminder
-                self._print_scope_warning("rogue access point")
-
-                def launch_et():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EvilTwin(self.iface, self.proj_dir).launch()
-
-                self.safe_exec(launch_et)
-
-            elif c == "7":
-                # Enterprise WPE – extra scope reminder
-                self._print_scope_warning("enterprise Wi‑Fi / EAP")
-
-                def launch_ent():
-                    if not self.iface:
-                        self.iface, self.bands = self.hw.setup()
-                    EnterpriseAttack(self.iface, self.proj_dir).launch()
-
-                self.safe_exec(launch_ent)
-
-            elif c == "8":
-                # Re-run hardware setup
-                self.iface = None
-                self.hw.setup()
-
-            elif c == "9":
-                print(f"\n{Y}[*] Shutting down Nighthawk Suite...{NC}")
-                sys.exit()
-
-    def run(self):
-        if sys.platform == "linux":
-            # Allow local root X11 on some desktops (best-effort, ignore errors)
-            os.system("xhost +local:root > /dev/null 2>&1")
-
-        self.check_dependencies()
-
-        try:
-            self.main_menu()
-        except KeyboardInterrupt:
-            sys.exit()
-
-
-if __name__ == "__main__":
-    app = Nighthawk()
-
-    if not app.check_admin():
-        print(f"{R}[!] Administrator/Root privileges required.{NC}")
-        if sys.platform == "win32":
-            print(f"{D} Right-click → Run as Administrator{NC}")
-        else:
-            print(f"{D} Try: sudo python3 nighthawk.py{NC}")
-        sys.exit(1)
-
-    app.run()
+# Nighthawk Suite
+
+**Cross-platform wireless assessment framework for authorized security testing (Linux / Windows / macOS).**
+
+Nighthawk Suite is a Python-based framework designed to help security professionals and network owners perform **authorized wireless security assessments** in a controlled, auditable way. It provides automation around common defensive and offensive techniques used in Wi‑Fi and network security testing while emphasizing **safety, scoping, and explicit permission** at every step.
+
+> **Important:** Nighthawk Suite is intended **only** for networks and systems you own or are explicitly authorized in writing to assess. Misuse may be illegal and is strictly discouraged.
+
+---
+
+## Key capabilities
+
+### Wireless assessment (Linux focus)
+
+- **Handshake capture (WPA2/WPA3 where supported)**  
+  - Automates discovery of nearby access points and attempts to capture 4‑way handshakes for offline password strength testing.
+- **Attack orchestration**  
+  - Integrates with tools like `aircrack-ng` and `hcxtools` for end‑to‑end workflows (capture → convert → offline crack).
+- **Interface / driver health checks**  
+  - Helps avoid unstable configurations by checking adapter and driver capabilities before attempting injection‑heavy operations.
+
+> **Note:** Some features (such as injection) depend on specific chipsets and drivers and may only work on Linux distributions such as Kali, Parrot, or Ubuntu.
+
+### Enterprise / EAP testing (authorized lab environments only)
+
+- **RADIUS / EAP test harness (WPE‑style behavior)**  
+  - Helps test whether enterprise Wi‑Fi clients properly validate certificates and are resistant to credential phishing in **authorized lab or test environments**.
+- **Rogue AP scenarios (Evil Twin)**  
+  - Spins up controlled, clearly marked test access points and captive portals for social engineering awareness training and security assessments.
+
+> These features are **only for environments where you have explicit authorization** (for example: internal red team, defensive lab setups, or training ranges). Do not deploy against production networks without written approval and well‑defined scope.
+
+### Cross-platform support
+
+- **Linux (Kali / Parrot / Ubuntu recommended)**  
+  - Full feature set, including active wireless testing modules (where hardware and drivers support it).
+- **Windows (Auditor mode)**  
+  - Focus on passive recon, loot management, and offline cracking.
+- **macOS (Recon mode)**  
+  - Passive recon, limited BLE scanning, and loot management where system APIs and drivers allow.
+
+Nighthawk Suite attempts to detect host OS and hardware capabilities and enables only the features that are safe and supported on that platform.
+
+---
+
+## Installation and usage
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/dash2hack-svg/Nighthawk_Suite.git
+cd Nighthawk_Suite
+
+2. Linux setup (recommended for full functionality)
+
+On a Debian-based system (Kali, Parrot, Ubuntu):
+
+sudo apt update
+sudo apt install -y aircrack-ng hostapd dnsmasq hcxtools macchanger
+
+Install Python dependencies:
+
+pip3 install -r requirements.txt
+
+Run Nighthawk Suite (root is typically required for wireless interfaces):
+
+sudo python3 nighthawk.py
+
+3. Windows (auditor mode)
+
+Supported features: passive recon, loot management, and offline cracking (no raw injection).
+
+Install Npcap
+
+During install, ensure “Install Npcap in WinPcap API-compatible Mode” is checked.
+
+Install Python 3.x from python.org.
+
+Open an elevated PowerShell (Run as Administrator):
+
+cd path\to\Nighthawk_Suite
+pip install -r requirements.txt
+python nighthawk.py
+
+4. macOS (recon mode)
+
+Supported features: passive recon, some Bluetooth scanning, loot management.
+
+Install Homebrew (if not already installed).
+
+Install dependencies:
+
+brew install nmap
+pip3 install -r requirements.txt
+sudo python3 nighthawk.py
+
+Note: macOS wireless APIs and driver restrictions can limit low‑level functionality. Nighthawk Suite will automatically restrict features to those that are safe and supported on the platform.
+
+Module overview
+
+Module
+
+Purpose
+
+Encryption
+
+Automates WPA2/WPA3 handshake capture and integrates with cracking tools.
+
+Enterprise WPE
+
+Simulated RADIUS/WPE server for testing enterprise Wi‑Fi configurations in authorized labs.
+
+Evil Twin
+
+Rogue AP + captive portal for awareness training and controlled phishing simulations.
+
+Loot Repository
+
+Organizes captured data, credentials, and generates HTML reports (“trophy room”).
+
+Recon
+
+Network mapping, OS detection, and environmental telemetry (where supported).
+
+Bluetooth Arsenal
+
+BLE scanning and basic tests (Linux) where hardware permits.
+
+All modules are designed to be modular and extensible, so new capabilities can be added without modifying the core framework.
+
+Design philosophy
+
+Nighthawk Suite is built with three priorities:
+
+Safety and scope awareness
+
+Features are explicitly designed to be used only on in‑scope targets with written authorization.
+
+Where possible, Nighthawk checks OS and interface capabilities to avoid unstable or undefined behavior.
+
+Automation with transparency
+
+Automates tedious workflows (recon → capture → conversion → reporting) while keeping steps visible and controllable.
+
+Encourages users to understand the actions being performed rather than treat it as a “black box.”
+
+Modularity and maintainability
+
+Clear separation between core engine and modules.
+
+Easier debugging, customization, and extension by security teams and researchers.
+
+Ethics and legal disclaimer
+
+This project is intended for:
+
+Security professionals performing authorized assessments
+
+Network owners testing the resilience of their own infrastructure
+
+Students in controlled lab environments learning about wireless security
+
+You are solely responsible for complying with all applicable laws and regulations in your jurisdiction. Using this tool against networks or systems without explicit, written permission may violate the law and is strictly discouraged.
+
+The authors and contributors do not assume any responsibility or liability for misuse, damage, legal issues, or any other consequences arising from the use of this software.
+
+License
+
+Nighthawk Suite is distributed under the MIT License.See the LICENSE file for full details.
